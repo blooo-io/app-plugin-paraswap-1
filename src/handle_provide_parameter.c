@@ -296,13 +296,15 @@ static void handle_megaswap(ethPluginProvideParameter_t *msg, paraswap_parameter
             }
             context->next_param = PATHS_LEN;
             break;
-        case PATHS_LEN:
-            if (!U2BE_from_parameter(msg->parameter, &context->skip)) {
+        case PATHS_LEN: {
+            uint16_t skip;
+            if (!U2BE_from_parameter(msg->parameter, &skip)) {
                 msg->result = ETH_PLUGIN_RESULT_ERROR;
             }
+            context->skip = (uint8_t) skip;
             context->skip--;  // Decrease by one because we wish to acces path[-1].
             context->next_param = PATH;
-            break;
+        } break;
         case PATH:
             context->checkpoint = msg->parameterOffset;
             if (!U2BE_from_parameter(msg->parameter, &context->offset)) {
