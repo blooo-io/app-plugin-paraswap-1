@@ -76,51 +76,37 @@ jobs:
       upload_app_binaries_artifact: ethereum_build_develop
 
   jobs-e2e_tests:
-    name: E2E Tests
     needs: [build_plugin, build_develop_ethereum_app]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v3
 
-      # Download Artifacts
-      - name: Download Plugin Binaries
+      # Debug reusable workflow outputs (if emitted)
+      - name: Debug binary path
+        run: |
+          echo "Binary path from reusable workflow: ${{ needs.build_plugin.outputs.binary_path }}"
+
+      # Download Plugin Binaries (with dynamic names or merged artifact)
+      - name: Download Plugin Binary for NanoX
         uses: actions/download-artifact@v3
         with:
-          name: plugin_binaries
-          path: tests/elfs/plugin
+          name: plugin_binaries-nanox
+          path: tests/elfs/plugin/nanox
+        continue-on-error: true
 
-      - name: Download Ethereum Binaries
+      - name: Download Plugin Binary for NanoS
         uses: actions/download-artifact@v3
         with:
-          name: ethereum_build_develop
-          path: tests/elfs/ethereum
+          name: plugin_binaries-nanos
+          path: tests/elfs/plugin/nanos
+        continue-on-error: true
 
-      # Debug Artifact Contents
+      # Debug artifact contents
       - name: Debug Downloaded Artifacts
         run: |
-          echo "Plugin binaries:"
-          ls -R tests/elfs/plugin
-          echo "Ethereum binaries:"
-          ls -R tests/elfs/ethereum
+          ls -R tests/elfs/
 
-      # Install Node and Yarn
-      - name: Install Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: "16.19.0"
-
-      - name: Install Yarn
-        run: npm install -g yarn
-
-      # Install Dependencies
-      - name: Install Test Dependencies
-        run: cd tests && yarn install
-
-      # Run Zemu Tests
+      # Run Tests
       - name: Run Zemu Tests
         run: cd tests && yarn test
-
-      # Cleanup Artifacts
-      - name: Cleanup Test Artifacts
-        run: rm -rf tests/elfs/
