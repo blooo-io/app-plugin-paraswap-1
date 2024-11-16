@@ -82,10 +82,11 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v3
 
-      # Debug reusable workflow outputs (if emitted)
-      - name: Debug binary path
+      # Debugging: List all available artifacts
+      - name: List Artifacts
         run: |
-          echo "Binary path from reusable workflow: ${{ needs.build_plugin.outputs.binary_path }}"
+          echo "Listing available artifacts:"
+          ls -R ${{ github.workspace }}
 
       # Download Plugin Binaries (with dynamic names or merged artifact)
       - name: Download Plugin Binary for NanoX
@@ -111,6 +112,7 @@ jobs:
       # Debug artifact contents
       - name: Debug Downloaded Artifacts
         run: |
+          echo "Downloaded artifacts structure:"
           ls -R tests/elfs/
 
       # Run Tests
