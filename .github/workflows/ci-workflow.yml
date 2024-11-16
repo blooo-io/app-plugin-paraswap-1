@@ -84,6 +84,15 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v3
 
+      # Add verbose logging to debug artifact structure
+      - name: List Workspace Contents
+        run: |
+          echo "Current directory structure:"
+          pwd
+          ls -la
+          echo "Tests directory structure:"
+          ls -R tests/
+
       # Download artifacts with specific device paths
       - name: Download Plugin Binaries
         uses: actions/download-artifact@v3
@@ -97,14 +106,6 @@ jobs:
           name: ethereum_build_develop
           path: tests/elfs/ethereum
 
-      # Add verbose logging to debug artifact structure
-      - name: List Workspace Contents
-        run: |
-          echo "Current directory structure:"
-          pwd
-          ls -la
-          echo "Tests directory structure:"
-          ls -R tests/
 
       - name: Install node
         uses: actions/setup-node@v3
