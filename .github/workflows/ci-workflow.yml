@@ -82,31 +82,37 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v3
 
-      # Debug reusable workflow outputs (if emitted)
-      - name: Debug binary path
-        run: |
-          echo "Binary path from reusable workflow: ${{ needs.build_plugin.outputs.binary_path }}"
-
-      # Download Plugin Binaries (with dynamic names or merged artifact)
-      - name: Download Plugin Binary for NanoX
+      # Download merged artifacts from both builds
+      - name: Download Plugin Binaries
         uses: actions/download-artifact@v3
         with:
-          name: plugin_binaries-nanox
-          path: tests/elfs/plugin/nanox
-        continue-on-error: true
+          name: plugin_binaries
+          path: tests/elfs/plugin
 
-      - name: Download Plugin Binary for NanoS
+      - name: Download Ethereum App Binaries
         uses: actions/download-artifact@v3
         with:
-          name: plugin_binaries-nanos
-          path: tests/elfs/plugin/nanos
-        continue-on-error: true
+          name: ethereum_build_develop
+          path: tests/elfs/ethereum
 
       # Debug artifact contents
       - name: Debug Downloaded Artifacts
         run: |
           ls -R tests/elfs/
 
-      # Run Tests
-      - name: Run Zemu Tests
-        run: cd tests && yarn test
+      - name: Install node
+        uses: actions/setup-node@v3
+        with:
+          node-version: "16.19.0"
+
+      - name: Install yarn
+        run: |
+          npm install -g yarn
+
+      - name: Install JS deps
+        run: |
+          cd tests && yarn install
+
+      - name: Run Zemu tests
+        run: |
+          cd tests && yarn test
