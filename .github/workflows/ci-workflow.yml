@@ -75,39 +75,52 @@ jobs:
       flags: "DEBUG=1 CAL_TEST_KEY=1"
       upload_app_binaries_artifact: ethereum_build_develop
 
-  jobs-e2e-tests:
+  jobs-e2e_tests:
     name: E2E Tests
     needs: [build_plugin, build_develop_ethereum_app]
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        device: [nanos, nanox, nanosp]
     steps:
-      - name: Download plugin binaries
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      # Download Artifacts
+      - name: Download Plugin Binaries
         uses: actions/download-artifact@v3
         with:
           name: plugin_binaries
-          path: tests/elfs/
+          path: tests/elfs/plugin
 
-      - name: Download Ethereum binaries
+      - name: Download Ethereum Binaries
         uses: actions/download-artifact@v3
         with:
           name: ethereum_build_develop
-          path: tests/elfs/
+          path: tests/elfs/ethereum
 
-      - name: Install node
+      # Debug Artifact Contents
+      - name: Debug Downloaded Artifacts
+        run: |
+          echo "Plugin binaries:"
+          ls -R tests/elfs/plugin
+          echo "Ethereum binaries:"
+          ls -R tests/elfs/ethereum
+
+      # Install Node and Yarn
+      - name: Install Node.js
         uses: actions/setup-node@v3
         with:
           node-version: "16.19.0"
 
-      - name: Install yarn
-        run: |
-          npm install -g yarn
+      - name: Install Yarn
+        run: npm install -g yarn
 
-      - name: Install JS deps
-        run: |
-          cd tests && yarn install
+      # Install Dependencies
+      - name: Install Test Dependencies
+        run: cd tests && yarn install
 
-      - name: Run Zemu tests
-        run: |
-          cd tests && yarn test
+      # Run Zemu Tests
+      - name: Run Zemu Tests
+        run: cd tests && yarn test
+
+      # Cleanup Artifacts
+      - name: Cleanup Test Artifacts
+        run: rm -rf tests/elfs/
