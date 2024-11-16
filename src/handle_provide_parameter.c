@@ -347,7 +347,7 @@ static void handle_swap_uni_v2(ethPluginProvideParameter_t *msg, paraswap_parame
     }
 }
 
-void handle_provide_parameter(void *parameters) {
+void handle_provide_parameter(ethPluginProvideParameter_t *parameters) {
     ethPluginProvideParameter_t *msg = (ethPluginProvideParameter_t *) parameters;
     paraswap_parameters_t *context = (paraswap_parameters_t *) msg->pluginContext;
 
