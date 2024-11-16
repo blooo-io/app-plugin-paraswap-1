@@ -21,6 +21,8 @@ jobs:
             name: "nanox"
           - sdk: "$NANOSP_SDK"
             name: "nanosp"
+          - sdk: "$STAX_SDK"
+            name: "stax"
 
     runs-on: ubuntu-latest
     container:
@@ -36,78 +38,44 @@ jobs:
         run: |
           make BOLOS_SDK=${{ matrix.sdk }} -j
 
-  job_build_debug_plugin:
-    name: Build debug plugin
-    strategy:
-      matrix:
-        include:
-          - sdk: "$NANOS_SDK"
-            name: "nanos"
-          - sdk: "$NANOX_SDK"
-            name: "nanox"
-          - sdk: "$NANOSP_SDK"
-            name: "nanosp"
-
+  job_scan_build:
+    name: Clang Static Analyzer
     runs-on: ubuntu-latest
+
     container:
       image: ghcr.io/ledgerhq/ledger-app-builder/ledger-app-builder-lite:latest
 
     steps:
-      - name: Clone
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
         with:
           submodules: recursive
 
-      - name: Build
+      - name: Build with Clang Static Analyzer
         run: |
-          make DEBUG=1 BOLOS_SDK=${{ matrix.sdk }} -j
+          git config --global --add safe.directory /__w/app-plugin-paraswap-1/app-plugin-paraswap-1
+          scan-build --use-cc=clang -analyze-headers -enable-checker security -enable-checker unix -enable-checker valist -o scan-build --status-bugs make default
 
-      - name: Rename binary
-        run: |
-          mv bin/app.elf plugin_${{ matrix.name }}.elf
-
-      - name: Upload binary
-        uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v3
+        if: failure()
         with:
-          name: binaries
-          path: plugin_${{ matrix.name }}.elf
+          name: scan-build
+          path: scan-build
 
-  job_build_debug_app:
-    name: Build debug Ethereum app
-    strategy:
-      matrix:
-        include:
-          - sdk: "$NANOS_SDK"
-            name: "nanos"
-          - sdk: "$NANOX_SDK"
-            name: "nanox"
-          - sdk: "$NANOSP_SDK"
-            name: "nanosp"
+  build_plugin:
+    name: Build plugin using the reusable workflow
+    uses: LedgerHQ/ledger-app-workflows/.github/workflows/reusable_build.yml@v1
+    with:
+      upload_app_binaries_artifact: plugin_binaries
+      flags: "DEBUG=1"
 
-    runs-on: ubuntu-latest
-    container:
-      image: ghcr.io/ledgerhq/ledger-app-builder/ledger-app-builder-lite:latest
-
-    steps:
-      - name: Checkout app-ethereum
-        uses: actions/checkout@v3
-        with:
-          repository: LedgerHQ/app-ethereum
-          ref: ${{ ((github.base_ref || github.ref_name) == 'main' && 'master') || (github.base_ref || github.ref_name) }}
-
-      - name: Build
-        run: |
-          make DEBUG=1 BYPASS_SIGNATURES=1 BOLOS_SDK=${{ matrix.sdk }} -j
-
-      - name: Rename binary
-        run: |
-          mv bin/app.elf ethereum_${{ matrix.name }}.elf
-
-      - name: Upload binary
-        uses: actions/upload-artifact@v3
-        with:
-          name: binaries
-          path: ethereum_${{ matrix.name }}.elf
+  build_develop_ethereum_app:
+    name: Build Ethereum app using the reusable workflow
+    uses: LedgerHQ/ledger-app-workflows/.github/workflows/reusable_build.yml@v1
+    with:
+      app_repository: LedgerHQ/app-ethereum
+      app_branch_name: develop
+      flags: "DEBUG=1 CAL_TEST_KEY=1"
+      upload_app_binaries_artifact: ethereum_build_develop
 
   jobs-e2e-tests:
     name: E2E Tests
