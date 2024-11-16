@@ -65,6 +65,7 @@ jobs:
     with:
       upload_app_binaries_artifact: plugin_binaries
       flags: "DEBUG=1"
+      run_for_devices: '["nanos", "nanox", "nanosp"]'
 
   build_develop_ethereum_app:
     name: Build Ethereum app using the reusable workflow
@@ -74,6 +75,7 @@ jobs:
       app_branch_name: develop
       flags: "DEBUG=1 CAL_TEST_KEY=1"
       upload_app_binaries_artifact: ethereum_build_develop
+      run_for_devices: '["nanos", "nanox", "nanosp"]'
 
   jobs-e2e_tests:
     needs: [build_plugin, build_develop_ethereum_app]
@@ -82,7 +84,7 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v3
 
-      # Download merged artifacts from both builds
+      # Download artifacts with specific device paths
       - name: Download Plugin Binaries
         uses: actions/download-artifact@v3
         with:
@@ -95,10 +97,14 @@ jobs:
           name: ethereum_build_develop
           path: tests/elfs/ethereum
 
-      # Debug artifact contents
-      - name: Debug Downloaded Artifacts
+      # Add verbose logging to debug artifact structure
+      - name: List Workspace Contents
         run: |
-          ls -R tests/elfs/
+          echo "Current directory structure:"
+          pwd
+          ls -la
+          echo "Tests directory structure:"
+          ls -R tests/
 
       - name: Install node
         uses: actions/setup-node@v3
