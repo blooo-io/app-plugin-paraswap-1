@@ -94,9 +94,7 @@ static void set_beneficiary_ui(ethQueryContractUI_t *msg, paraswap_parameters_t 
     msg->msg[0] = '0';
     msg->msg[1] = 'x';
 
-    getEthAddressStringFromBinary((uint8_t *) context->beneficiary,
-                                  msg->msg + 2,
-                                  0);
+    getEthAddressStringFromBinary((uint8_t *) context->beneficiary, msg->msg + 2, 0);
 }
 
 // Set UI for "Warning" screen.
