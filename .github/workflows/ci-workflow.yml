@@ -76,7 +76,6 @@ jobs:
   #     upload_app_binaries_artifact: ethereum_build_develop
 
   jobs-e2e_tests:
-    needs: [build_plugin, build_develop_ethereum_app]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
