@@ -1,6 +1,6 @@
 #include "paraswap_plugin.h"
 
-void handle_query_contract_id(void *parameters) {
+void handle_query_contract_id(ethQueryContractID_t *parameters) {
     ethQueryContractID_t *msg = (ethQueryContractID_t *) parameters;
     const paraswap_parameters_t *context = (paraswap_parameters_t *) msg->pluginContext;
 
