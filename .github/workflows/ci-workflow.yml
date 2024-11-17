@@ -59,27 +59,35 @@ jobs:
           name: scan-build
           path: scan-build
 
-  # build_plugin:
-  #   name: Build plugin using the reusable workflow
-  #   uses: LedgerHQ/ledger-app-workflows/.github/workflows/reusable_build.yml@v1
-  #   with:
-  #     upload_app_binaries_artifact: plugin_binaries
-  #     flags: "DEBUG=1"
+  build_plugin:
+    name: Build plugin using the reusable workflow
+    uses: LedgerHQ/ledger-app-workflows/.github/workflows/reusable_build.yml@v1
+    with:
+      upload_app_binaries_artifact: plugin_binaries
+      flags: "DEBUG=1"
 
-  # build_develop_ethereum_app:
-  #   name: Build Ethereum app using the reusable workflow
-  #   uses: LedgerHQ/ledger-app-workflows/.github/workflows/reusable_build.yml@v1
-  #   with:
-  #     app_repository: LedgerHQ/app-ethereum
-  #     app_branch_name: develop
-  #     flags: "DEBUG=1 CAL_TEST_KEY=1"
-  #     upload_app_binaries_artifact: ethereum_build_develop
+  build_develop_ethereum_app:
+    name: Build Ethereum app using the reusable workflow
+    uses: LedgerHQ/ledger-app-workflows/.github/workflows/reusable_build.yml@v1
+    with:
+      app_repository: LedgerHQ/app-ethereum
+      app_branch_name: develop
+      flags: "DEBUG=1 CAL_TEST_KEY=1"
+      upload_app_binaries_artifact: ethereum_build_develop
 
   jobs-e2e_tests:
+    needs: [build_plugin, build_develop_ethereum_app]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v3
+
+      # Debug echo of the binary path
+      - name: Debug Binary Path
+        run: echo ${{ needs.build_plugin.outputs.binary_path }}
+      # Debug echo of the binary path
+      - name: Debug Ethereum Binary Path
+        run: echo ${{ needs.build_develop_ethereum_app.outputs.binary_path }}
 
       - name: Fetch metadata
         uses: LedgerHQ/ledger-app-workflows/.github/workflows/reusable_build.yml@v1
@@ -87,27 +95,19 @@ jobs:
           upload_app_binaries_artifact: plugin_binaries
           flags: "DEBUG=1"
 
-      - name: Build Ethereum app using the reusable workflow
-        uses: LedgerHQ/ledger-app-workflows/.github/workflows/reusable_build.yml@v1
-        with:
-          app_repository: LedgerHQ/app-ethereum
-          app_branch_name: develop
-          flags: "DEBUG=1 CAL_TEST_KEY=1"
-          upload_app_binaries_artifact: ethereum_build_develop
-
       - name: Download Plugin Binaries
         uses: actions/download-artifact@v3
         with:
           name: plugin_binaries
-          path: tests/elfs/plugin
+          path: ${{ needs.build_plugin.outputs.binary_path }}
         continue-on-error: true
 
       # Download Ethereum App Binaries for NanoS
       - name: Download Ethereum App Binaries
         uses: actions/download-artifact@v3
         with:
-          name: ethereum_build_develop
-          path: tests/elfs/ethereum
+          name: ethereum_build_develop-nanos
+          path: ${{ needs.build_develop_ethereum_app.outputs.binary_path }}
         continue-on-error: true
 
       # Debug artifact contents
