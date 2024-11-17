@@ -82,19 +82,19 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v3
 
-      - name: Download Plugin Binary for NanoS
+      - name: Download Plugin Binaries
         uses: actions/download-artifact@v3
         with:
-          name: plugin_binaries-nanos
-          path: tests/elfs/plugin/nanos
+          name: plugin_binaries
+          path: ${{ jobs.fetch_metadata.outputs.build_directory }}
         continue-on-error: true
 
       # Download Ethereum App Binaries for NanoS
-      - name: Download Ethereum App Binaries for NanoS
+      - name: Download Ethereum App Binaries
         uses: actions/download-artifact@v3
         with:
           name: ethereum_build_develop-nanos
-          path: tests/elfs/ethereum/nanos
+          path: ${{ jobs.fetch_metadata.outputs.build_directory }}
         continue-on-error: true
 
       # Debug artifact contents
