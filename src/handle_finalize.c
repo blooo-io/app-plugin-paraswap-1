@@ -1,6 +1,6 @@
 #include "paraswap_plugin.h"
 
-void handle_finalize(void *parameters) {
+void handle_finalize(ethPluginFinalize_t *parameters) {
     ethPluginFinalize_t *msg = (ethPluginFinalize_t *) parameters;
     paraswap_parameters_t *context = (paraswap_parameters_t *) msg->pluginContext;
     if (context->valid) {

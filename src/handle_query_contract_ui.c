@@ -94,10 +94,7 @@ static void set_beneficiary_ui(ethQueryContractUI_t *msg, paraswap_parameters_t 
     msg->msg[0] = '0';
     msg->msg[1] = 'x';
 
-    getEthAddressStringFromBinary((uint8_t *) context->beneficiary,
-                                  msg->msg + 2,
-                                  msg->pluginSharedRW->sha3,
-                                  0);
+    getEthAddressStringFromBinary((uint8_t *) context->beneficiary, msg->msg + 2, 0);
 }
 
 // Set UI for "Warning" screen.
@@ -173,7 +170,7 @@ static screens_t get_screen(const ethQueryContractUI_t *msg, const paraswap_para
     return ERROR;
 }
 
-void handle_query_contract_ui(void *parameters) {
+void handle_query_contract_ui(ethQueryContractUI_t *parameters) {
     ethQueryContractUI_t *msg = (ethQueryContractUI_t *) parameters;
     paraswap_parameters_t *context = (paraswap_parameters_t *) msg->pluginContext;
 
