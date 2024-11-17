@@ -82,20 +82,6 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v3
 
-      # Debugging: List all available artifacts
-      - name: List Artifacts
-        run: |
-          echo "Listing available artifacts:"
-          ls -R ${{ github.workspace }}
-
-      # Download Plugin Binaries (with dynamic names or merged artifact)
-      - name: Download Plugin Binary for NanoX
-        uses: actions/download-artifact@v3
-        with:
-          name: plugin_binaries-nanox
-          path: tests/elfs/plugin/nanox
-        continue-on-error: true
-
       - name: Download Plugin Binary for NanoS
         uses: actions/download-artifact@v3
         with:
@@ -103,11 +89,13 @@ jobs:
           path: tests/elfs/plugin/nanos
         continue-on-error: true
 
-      - name: Download Ethereum App Binaries
+      # Download Ethereum App Binaries for NanoS
+      - name: Download Ethereum App Binaries for NanoS
         uses: actions/download-artifact@v3
         with:
-          name: ethereum_build_develop
-          path: tests/elfs/ethereum
+          name: ethereum_build_develop-nanos
+          path: tests/elfs/ethereum/nanos
+        continue-on-error: true
 
       # Debug artifact contents
       - name: Debug Downloaded Artifacts
