@@ -89,12 +89,6 @@ jobs:
       - name: Debug Ethereum Binary Path
         run: echo ${{ needs.build_develop_ethereum_app.outputs.binary_path }}
 
-      - name: Fetch metadata
-        uses: LedgerHQ/ledger-app-workflows/.github/workflows/reusable_build.yml@v1
-        with:
-          upload_app_binaries_artifact: plugin_binaries
-          flags: "DEBUG=1"
-
       - name: Download Plugin Binaries
         uses: actions/download-artifact@v3
         with:
