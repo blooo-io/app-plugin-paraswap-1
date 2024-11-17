@@ -21,6 +21,8 @@ jobs:
             name: "nanox"
           - sdk: "$NANOSP_SDK"
             name: "nanosp"
+          - sdk: "$STAX_SDK"
+            name: "stax"
 
     runs-on: ubuntu-latest
     container:
@@ -36,80 +38,106 @@ jobs:
         run: |
           make BOLOS_SDK=${{ matrix.sdk }} -j
 
-  job_scan_build:
-    name: Clang Static Analyzer
-    runs-on: ubuntu-latest
+  job_build_debug_plugin:
+    name: Build debug plugin
+    strategy:
+      matrix:
+        include:
+          - sdk: "$NANOS_SDK"
+            name: "nanos"
+          - sdk: "$NANOX_SDK"
+            name: "nanox"
+          - sdk: "$NANOSP_SDK"
+            name: "nanosp"
 
+    runs-on: ubuntu-latest
     container:
       image: ghcr.io/ledgerhq/ledger-app-builder/ledger-app-builder-lite:latest
 
     steps:
-      - uses: actions/checkout@v3
+      - name: Clone
+        uses: actions/checkout@v3
         with:
           submodules: recursive
 
-      - name: Build with Clang Static Analyzer
+      - name: Build
         run: |
-          git config --global --add safe.directory /__w/app-plugin-paraswap-1/app-plugin-paraswap-1
-          scan-build --use-cc=clang -analyze-headers -enable-checker security -enable-checker unix -enable-checker valist -o scan-build --status-bugs make default
+          make DEBUG=1 BOLOS_SDK=${{ matrix.sdk }} -j
 
-      - uses: actions/upload-artifact@v3
-        if: failure()
+      - name: Rename binary
+        run: |
+          mv bin/app.elf plugin_${{ matrix.name }}.elf
+
+      - name: Upload binary
+        uses: actions/upload-artifact@v3
         with:
-          name: scan-build
-          path: scan-build
+          name: binaries
+          path: plugin_${{ matrix.name }}.elf
 
-  build_plugin:
-    name: Build plugin using the reusable workflow
-    uses: LedgerHQ/ledger-app-workflows/.github/workflows/reusable_build.yml@v1
-    with:
-      upload_app_binaries_artifact: plugin_binaries
-      flags: "DEBUG=1"
+  job_build_debug_app:
+    name: Build debug Ethereum app
+    strategy:
+      matrix:
+        include:
+          - sdk: "$NANOS_SDK"
+            name: "nanos"
+          - sdk: "$NANOX_SDK"
+            name: "nanox"
+          - sdk: "$NANOSP_SDK"
+            name: "nanosp"
 
-  build_develop_ethereum_app:
-    name: Build Ethereum app using the reusable workflow
-    uses: LedgerHQ/ledger-app-workflows/.github/workflows/reusable_build.yml@v1
-    with:
-      app_repository: LedgerHQ/app-ethereum
-      app_branch_name: develop
-      flags: "DEBUG=1 CAL_TEST_KEY=1"
-      upload_app_binaries_artifact: ethereum_build_develop
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/ledgerhq/ledger-app-builder/ledger-app-builder-lite:latest
 
-  jobs-e2e_tests:
-    needs: [build_plugin, build_develop_ethereum_app]
+    steps:
+      - name: Checkout app-ethereum
+        uses: actions/checkout@v3
+        with:
+          repository: LedgerHQ/app-ethereum
+          ref: ${{ ((github.base_ref || github.ref_name) == 'main' && 'master') || (github.base_ref || github.ref_name) }}
+
+      - name: Build
+        run: |
+          make DEBUG=1 BYPASS_SIGNATURES=1 BOLOS_SDK=${{ matrix.sdk }} -j
+
+      - name: Rename binary
+        run: |
+          mv bin/app.elf ethereum_${{ matrix.name }}.elf
+
+      - name: Upload binary
+        uses: actions/upload-artifact@v3
+        with:
+          name: binaries
+          path: ethereum_${{ matrix.name }}.elf
+
+  jobs-e2e-tests:
+    name: E2E Tests
+    needs: [job_build_debug_plugin, job_build_debug_app]
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Repository
+      - name: Checkout
         uses: actions/checkout@v3
 
-      # Debug echo of the binary path
-      - name: Debug Binary Path
-        run: echo ${{ needs.build_plugin.outputs.binary_path }}
-      # Debug echo of the binary path
-      - name: Debug Ethereum Binary Path
-        run: echo ${{ needs.build_develop_ethereum_app.outputs.binary_path }}
-
-      - name: Download Plugin Binaries
+      - name: Download built binaries
         uses: actions/download-artifact@v3
         with:
-          name: plugin_binaries
-          path: ${{ needs.build_plugin.outputs.binary_path }}
-        continue-on-error: true
+          name: binaries
+          path: tests/elfs/
 
-      # Download Ethereum App Binaries for NanoS
-      - name: Download Ethereum App Binaries
-        uses: actions/download-artifact@v3
+      - name: Install node
+        uses: actions/setup-node@v3
         with:
-          name: ethereum_build_develop-nanos
-          path: ${{ needs.build_develop_ethereum_app.outputs.binary_path }}
-        continue-on-error: true
+          node-version: "16.19.0"
 
-      # Debug artifact contents
-      - name: Debug Downloaded Artifacts
+      - name: Install yarn
         run: |
-          echo "Downloaded artifacts structure:"
-          ls -R tests/elfs/
+          npm install -g yarn
 
-      # Run Tests
-      - name: Run Zemu Tests
-        run: cd tests && yarn test
+      - name: Install JS deps
+        run: |
+          cd tests && yarn install
+
+      - name: Run Zemu tests
+        run: |
+          cd tests && yarn test
