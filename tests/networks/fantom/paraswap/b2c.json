@@ -1,0 +1,37 @@
+{
+    "chainId": 250,
+    "contracts": [
+        {
+            "address": "0xdef171fe48cf0115b1d80b88dc8eab59176fee57",
+            "contractName": "AugustusSwapper",
+            "selectors": {
+                "0x8f00eccb": {
+                    "erc20OfInterest": [
+                        "data.fromToken",
+                        "data.path.-1.to"
+                    ],
+                    "method": "MultiSwap",
+                    "plugin": "Paraswap"
+                },
+                "0xec1d21dd": {
+                    "erc20OfInterest": [
+                        "data.fromToken",
+                        "data.path.0.path.-1.to"
+                    ],
+                    "method": "MegaSwap",
+                    "plugin": "Paraswap"
+                },
+                "0xf95a49eb": {
+                    "erc20OfInterest": [
+                        "data.fromToken",
+                        "data.toToken"
+                    ],
+                    "method": "Buy",
+                    "plugin": "Paraswap"
+                }
+            }
+        }
+
+    ],
+    "name": "Paraswap"
+}
