@@ -24,6 +24,13 @@ void handle_init_contract(ethPluginInitContract_t *parameters) {
     memset(context, 0, sizeof(*context));
     context->valid = 1;
 
+    for (uint8_t i = 0; i < NUM_PARASWAP_SELECTORS; i++) {
+        if (memcmp((uint8_t *) PIC(PARASWAP_SELECTORS[i]), msg->selector, SELECTOR_SIZE) == 0) {
+            context->selectorIndex = i;
+            break;
+        }
+    }
+
     // Set `next_param` to be the first field we expect to parse.
     switch (context->selectorIndex) {
         case BUY_ON_UNI_FORK:
