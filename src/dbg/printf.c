@@ -162,8 +162,7 @@ static inline void _out_fct(char character, void* buffer, size_t idx, size_t max
 // \return The length of the string (excluding the terminating 0) limited by 'maxsize'
 static inline unsigned int _strnlen_s(const char* str, size_t maxsize) {
     const char* s;
-    for (s = str; *s && maxsize--; ++s)
-        ;
+    for (s = str; *s && maxsize--; ++s);
     return (unsigned int) (s - str);
 }
 
@@ -553,7 +552,7 @@ static size_t _etoa(out_fct_type out,
     exp2 = (int) (expval * 3.321928094887362 + 0.5);
     const double z = expval * 2.302585092994046 - exp2 * 0.6931471805599453;
     const double z2 = z * z;
-    conv.U = (uint64_t) (exp2 + 1023) << 52U;
+    conv.U = (uint64_t)(exp2 + 1023) << 52U;
     // compute exp(z) using continued fractions, see
     // https://en.wikipedia.org/wiki/Exponential_function#Continued_fractions_for_ex
     conv.F *= 1 + 2 * z / (2 - z + (z2 / (6 + (z2 / (10 + z2 / 14)))));
