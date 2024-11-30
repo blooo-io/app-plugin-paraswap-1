@@ -1,4 +1,5 @@
 #include "paraswap_plugin.h"
+#include "os_pic.h"
 
 // Called once to init.
 void handle_init_contract(ethPluginInitContract_t *parameters) {
@@ -25,8 +26,7 @@ void handle_init_contract(ethPluginInitContract_t *parameters) {
     context->valid = 1;
 
     for (uint8_t i = 0; i < NUM_PARASWAP_SELECTORS; i++) {
-        if (memcmp((uint8_t *) pic((void *) PARASWAP_SELECTORS[i]), msg->selector, SELECTOR_SIZE) ==
-            0) {
+        if (memcmp((uint8_t *) PIC(PARASWAP_SELECTORS[i]), msg->selector, SELECTOR_SIZE) == 0) {
             context->selectorIndex = i;
             break;
         }
