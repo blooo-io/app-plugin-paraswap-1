@@ -55,6 +55,10 @@ beforeAll(async () => {
   await Zemu.checkAndPullImage();
 });
 
+afterAll(async () => {
+  await Zemu.stopAllEmuContainers();
+});
+
 jest.setTimeout(1000 * 60 * 60);
 
 /**
