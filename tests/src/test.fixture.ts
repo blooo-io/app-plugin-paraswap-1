@@ -55,9 +55,6 @@ beforeAll(async () => {
   await Zemu.checkAndPullImage();
 });
 
-afterAll(async () => {
-  await Zemu.stopAllEmuContainers();
-});
 
 jest.setTimeout(1000 * 60 * 60);
 
@@ -206,7 +203,7 @@ async function processTransaction(eth, sim, steps, label, rawTxHex, srlTx = "") 
  * @param {string} rawTxHex RawTx Hex to test
  * @param {boolean} signed The plugin is already signed and existing in Ledger database
  */
-function processTest(device, contractName, testLabel, testDirSuffix, rawTxHex, signed, serializedTx, testNetwork) {
+async function processTest(device, contractName, testLabel, testDirSuffix, rawTxHex, signed, serializedTx, testNetwork) {
     test(
       "[" + contractName + "] - " + device.label + " - " + testLabel,
       zemu(device.name, async (sim, eth) => {
