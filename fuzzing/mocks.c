@@ -1,6 +1,7 @@
 #include "paraswap_plugin.h"
 #include "lcx_common.h"
 #include "lcx_hash.h"
+#include "mocks.h"
 #include <stddef.h>
 
 size_t strlcat(char *dst, const char *src, size_t size) {
@@ -45,4 +46,10 @@ cx_err_t cx_keccak_256_hash_iovec(const cx_iovec_t *iovec,
 
 void os_sched_exit(bolos_task_status_t exit_code) {
     return;
+}
+
+// Mock implementation of pic function for fuzzing
+void *pic(void *addr) {
+    // In fuzzing environment, just return the address directly
+    return addr;
 }

@@ -1,5 +1,4 @@
 #include "paraswap_plugin.h"
-#include "os_pic.h"
 
 // Called once to init.
 void handle_init_contract(ethPluginInitContract_t *parameters) {

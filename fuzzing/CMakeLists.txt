@@ -115,3 +115,7 @@ add_executable(fuzz
 
 target_compile_options(fuzz PUBLIC ${COMPILATION_FLAGS})
 target_link_options(fuzz PUBLIC ${COMPILATION_FLAGS})
+
+if (CMAKE_C_COMPILER_ID MATCHES "Clang")
+    add_compile_options(-gdwarf-4)
+endif()
