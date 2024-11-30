@@ -15,6 +15,7 @@
 
 #define TOKEN_SENT_FOUND     1
 #define TOKEN_RECEIVED_FOUND 1 << 1
+#define PIC(x)               pic((void *) x)
 
 // Paraswap uses `0xeeeee` as a dummy address to represent ETH.
 extern const uint8_t PARASWAP_ETH_ADDRESS[ADDRESS_LENGTH];
