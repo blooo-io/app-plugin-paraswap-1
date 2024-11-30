@@ -3,89 +3,46 @@
 # FILL THESE WITH YOUR OWN SDKs PATHS and APP-ETHEREUM's ROOT
 #NANOS_SDK=
 #NANOX_SDK=
+#NANOSP_SDK=
+#FLEX_SDK=
+#STAX_SDK=
 APP_ETHEREUM=/plugin_dev/app-ethereum
 
-# create elfs folder if it doesn't exist
+# Create elfs folder if it doesn't exist
 mkdir -p elfs
 
-# move to repo's root to build apps
+# Function to build both plugin and ethereum apps for a specific device
+build_device_elfs() {
+    local device=$1
+    local sdk_var="${device}_SDK"
+    
+    echo "*Building elfs for ${device}..."
+    export BOLOS_SDK="${!sdk_var}"
+
+    # Build plugin
+    echo "**Building app-paraswap for ${device}..."
+    make clean
+    make -j DEBUG=1
+    cp bin/app.elf "tests/elfs/plugin_${device,,}.elf"
+
+    # Build ethereum app
+    echo "**Building app-ethereum for ${device}..."
+    cd "$APP_ETHEREUM" || exit
+    make clean BOLOS_SDK="${!sdk_var}"
+    make -j DEBUG=1 BOLOS_SDK="${!sdk_var}" CHAIN=ethereum BYPASS_SIGNATURES=1 ALLOW_DATA=1
+    cd - || exit
+    cp "${APP_ETHEREUM}/bin/app.elf" "tests/elfs/ethereum_${device,,}.elf"
+}
+
+# Move to repo's root to build apps
 cd ..
 
-# echo "*Building elfs for Nano S..."
-# export BOLOS_SDK="$NANOS_SDK"
+# List of supported devices
+DEVICES=("NANOS" "NANOX" "NANOSP" "FLEX" "STAX")
 
-# echo "**Building app-paraswap for Nano S..."
-# make clean
-# make -j DEBUG=1
-# cp bin/app.elf "tests/elfs/plugin_nanos.elf"
-
-# echo "**Building app-ethereum for Nano S..."
-# cd $APP_ETHEREUM || exit
-# make clean
-# make -j DEBUG=1 CHAIN=ethereum BYPASS_SIGNATURES=1 ALLOW_DATA=1
-# cd - || exit
-# cp "${APP_ETHEREUM}/bin/app.elf" "tests/elfs/ethereum_nanos.elf"
-
-
-# echo "*Building elfs for Nano X..."
-# export BOLOS_SDK="$NANOX_SDK"
-
-# echo "**Building app-paraswap for Nano X..."
-# make clean
-# make -j DEBUG=1
-# cp bin/app.elf "tests/elfs/plugin_nanox.elf"
-
-# echo "**Building app-ethereum for Nano X..."
-# cd $APP_ETHEREUM || exit
-# make clean
-# make -j DEBUG=1 CHAIN=ethereum BYPASS_SIGNATURES=1 ALLOW_DATA=1
-# cd - || exit
-# cp "${APP_ETHEREUM}/bin/app.elf" "tests/elfs/ethereum_nanox.elf"
-
-# echo "*Building elfs for Nano S+..."
-# export BOLOS_SDK="$NANOSP_SDK"
-
-# echo "**Building app-1inch for Nano S+..."
-# make clean
-# make -j DEBUG=1
-# cp bin/app.elf "tests/elfs/plugin_nanosp.elf"
-
-# echo "**Building app-ethereum for Nano S+..."
-# cd $APP_ETHEREUM
-# make clean BOLOS_SDK=$NANOSP_SDK
-# make -j DEBUG=1 BOLOS_SDK=$NANOSP_SDK CHAIN=ethereum BYPASS_SIGNATURES=1
-# cd -
-# cp "${APP_ETHEREUM}/bin/app.elf" "tests/elfs/ethereum_nanosp.elf"
-
-echo "*Building elfs for Flex..."
-export BOLOS_SDK="$FLEX_SDK"
-
-echo "**Building app-1inch for Flex..."
-make clean
-make -j DEBUG=1
-cp bin/app.elf "tests/elfs/plugin_flex.elf"
-
-echo "**Building app-ethereum for Flex..."
-cd $APP_ETHEREUM
-make clean BOLOS_SDK=$FLEX_SDK
-make -j DEBUG=1 BOLOS_SDK=$FLEX_SDK CHAIN=ethereum BYPASS_SIGNATURES=1
-cd -
-cp "${APP_ETHEREUM}/bin/app.elf" "tests/elfs/ethereum_flex.elf"
-
-
-echo "*Building elfs for Stax..."
-export BOLOS_SDK="$STAX_SDK"
-
-echo "**Building app-1inch for Stax..."
-make clean
-make -j DEBUG=1
-cp bin/app.elf "tests/elfs/plugin_stax.elf"
-
-echo "**Building app-ethereum for Stax..."
-cd $APP_ETHEREUM
-make clean BOLOS_SDK=$STAX_SDK
-make -j DEBUG=1 BOLOS_SDK=$STAX_SDK CHAIN=ethereum BYPASS_SIGNATURES=1
-cd -
-cp "${APP_ETHEREUM}/bin/app.elf" "tests/elfs/ethereum_stax.elf"
+# Build for each device
+for device in "${DEVICES[@]}"; do
+    build_device_elfs "$device"
+done
 
 echo "done"

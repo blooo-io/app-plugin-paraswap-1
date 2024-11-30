@@ -1,5 +1,5 @@
-import Zemu from '@zondax/zemu';
-import { DEFAULT_START_OPTIONS, IDeviceModel } from '@zondax/zemu';
+import Zemu from '@blooo/zemu';
+import { DEFAULT_START_OPTIONS, IDeviceModel } from '@blooo/zemu';
 import Eth from '@ledgerhq/hw-app-eth';
 import { generate_plugin_config } from './generate_plugin_config';
 import { parseEther, parseUnits, RLP } from 'ethers/lib/utils';
@@ -54,6 +54,7 @@ let config ;
 beforeAll(async () => {
   await Zemu.checkAndPullImage();
 });
+
 
 jest.setTimeout(1000 * 60 * 60);
 
@@ -202,7 +203,7 @@ async function processTransaction(eth, sim, steps, label, rawTxHex, srlTx = "") 
  * @param {string} rawTxHex RawTx Hex to test
  * @param {boolean} signed The plugin is already signed and existing in Ledger database
  */
-function processTest(device, contractName, testLabel, testDirSuffix, rawTxHex, signed, serializedTx, testNetwork) {
+async function processTest(device, contractName, testLabel, testDirSuffix, rawTxHex, signed, serializedTx, testNetwork) {
     test(
       "[" + contractName + "] - " + device.label + " - " + testLabel,
       zemu(device.name, async (sim, eth) => {
