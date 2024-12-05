@@ -15,6 +15,7 @@
  *  limitations under the License.
  ********************************************************************************/
 
+#include <stdint.h>
 #include "paraswap_plugin.h"
 
 // ---------- Paraswap V5 -------------
